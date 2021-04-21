@@ -381,7 +381,7 @@ footer .col-2 a {font-weight: normal;}
 .card p {font-size:14px}
 .card:hover {transform: scale(1.0125);}
 #resources .card-content p {height: 260px;}
-#blog-main .card-content p {display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 5;overflow: hidden;} /*creates elipse*/
+#blog-main .card-content p {display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 5;overflow: hidden;min-height: 115px;} /*creates elipse*/
 #blog-main .card-header {height: 110px; text-align:center}
 #blog-post h2, #blog-post h3 {margin-top:calc(var(--val-baseline) * 2)}
 #blog-post h4 {margin-top:calc(var(--val-baseline))}

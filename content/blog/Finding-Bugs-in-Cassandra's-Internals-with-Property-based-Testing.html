@@ -11,7 +11,7 @@
 		<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400&family=Red+Hat+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" rel="stylesheet">
 	
 			
-	<script async defer data-domain="cassandra.staged.apache.org" src="https://plausible.cassandra.apache.org/js/plausible.js"></script></head>
+	</head>
 	<body class="blog-index">
 		<div class="container mx-auto">
 			<div id="mobile-nav-overlay" class="hide">
@@ -190,60 +190,62 @@
                   <div><div>
 					  <pre>
 @Test
-		public void corruptionCausesFailure()
-		{
-			qt().withExamples(500)
-				.forAll(inputWithCorruptablePosition(),
-						integers().between(0, Byte.MAX_VALUE).map(Integer::byteValue),
-						compressors(),
-						checksumTypes())
-				.checkAssert(this::roundTripWithCorruption);
-		}
+public void corruptionCausesFailure()
+{
+	qt().withExamples(500)
+		.forAll(inputWithCorruptablePosition(),
+				integers().between(0, Byte.MAX_VALUE).map(Integer::byteValue),
+				compressors(),
+				checksumTypes())
+		.checkAssert(this::roundTripWithCorruption);
+}
                   </pre></div></div>
                   
                   <p>The <code class="highlighter-rouge">roundTripWithCorruption</code> function is a generalization of a unit test that worked similarly but for a single case. It is given an input to transform and a position in the transformed output to insert corruption, as well as what byte to write to the corrupted position. The additional arguments (the compressor and checksum type) are used to ensure coverage of Cassandra’s various compression and checksumming implementations.</p>
                   
-                  <div><div><pre>private void roundTripWithCorruption(Pair&lt;String, Integer&gt; inputAndCorruptablePosition,
-					byte corruptionValue,
-					Compressor compressor,
-					ChecksumType checksum) {
-	String input = inputAndCorruptablePosition.left;
-	ByteBuf expectedBuf = Unpooled.wrappedBuffer(input.getBytes());
-	int byteToCorrupt = inputAndCorruptablePosition.right;
-	ChecksummingTransformer transformer = new ChecksummingTransformer(checksum, DEFAULT_BLOCK_SIZE, compressor);
-	ByteBuf outbound = transformer.transformOutbound(expectedBuf);
+                  <div><div><pre>
+private void roundTripWithCorruption(Pair&lt;String, Integer&gt; inputAndCorruptablePosition,
+	byte corruptionValue,
+	Compressor compressor,
+	ChecksumType checksum) {
+		String input = inputAndCorruptablePosition.left;
+		ByteBuf expectedBuf = Unpooled.wrappedBuffer(input.getBytes());
+		int byteToCorrupt = inputAndCorruptablePosition.right;
+		ChecksummingTransformer transformer = new ChecksummingTransformer(checksum, DEFAULT_BLOCK_SIZE, compressor);
+		ByteBuf outbound = transformer.transformOutbound(expectedBuf);
 
-	// make sure we're actually expecting to produce some corruption
-	if (outbound.getByte(byteToCorrupt) == corruptionValue)
-	return;
-
-	if (byteToCorrupt &gt;= outbound.writerIndex())
-	return;
-
-	try {
-	int oldIndex = outbound.writerIndex();
-	outbound.writerIndex(byteToCorrupt);
-	outbound.writeByte(corruptionValue);
-	outbound.writerIndex(oldIndex);
-	ByteBuf inbound = transformer.transformInbound(outbound, FLAGS);
-
-	// verify that the content was actually corrupted
-	expectedBuf.readerIndex(0);
-	Assert.assertEquals(expectedBuf, inbound);
-	} catch(ProtocolException e) {
+		// make sure we're actually expecting to produce some corruption
+		if (outbound.getByte(byteToCorrupt) == corruptionValue)
 		return;
+
+		if (byteToCorrupt &gt;= outbound.writerIndex())
+		return;
+
+		try {
+			int oldIndex = outbound.writerIndex();
+			outbound.writerIndex(byteToCorrupt);
+			outbound.writeByte(corruptionValue);
+			outbound.writerIndex(oldIndex);
+			ByteBuf inbound = transformer.transformInbound(outbound, FLAGS);
+
+			// verify that the content was actually corrupted
+			expectedBuf.readerIndex(0);
+			Assert.assertEquals(expectedBuf, inbound);
+		} catch(ProtocolException e) {
+			return;
+		}
 	}
-}
 </pre></div></div>
                   
                   <p>The remaining piece is how those arguments are generated — the arguments to <code class="highlighter-rouge">forAll</code> mentioned above. Each argument is a function that returns an input generator. For each example, an input is pulled from each generator and passed to <code class="highlighter-rouge">roundTripWithCorruption</code>.  The <code class="highlighter-rouge">compressors()</code> and <code class="highlighter-rouge">checksums()</code> generators aren’t copied here. They can be found in the <a target="_blank" href="https://github.com/apache/cassandra/blob/65fb17a88bd096b1e952ccca31ad709759644a1b/test/unit/org/apache/cassandra/transport/frame/checksum/ChecksummingTransformerTest.java#L209-L217">source</a> and are based on built-in generator methods, provided by QuickTheories, that select a value from a list of values. The second argument, <code class="highlighter-rouge">integers().between(0, Byte.MAX_VALUE).map(Integer::byteValue)</code>, generates non-negative numbers that fit into a single byte. These numbers will be passed as the <code class="highlighter-rouge">corruptionValue</code> argument.</p>
                   
                   <p>The <code class="highlighter-rouge">inputWithCorruptiblePosition</code> generator, copied below, generates strings to use as input to the transformation function and a position within the output byte stream to corrupt. Because compression prevents knowledge of the output size of the frame, the generator tries to choose a somewhat reasonable position to corrupt by limiting the choice to the size of the generated string (it’s uncommon for compression to generate a larger string and the implementation discards the compressed value if it does). It also avoids corrupting the first two bytes of the stream which are not covered by a checksum and therefore can be corrupted without being caught. The function above ensures that corruption is actually introduced and that corrupting a position larger than the size of the output does not occur.</p>
                   
-                  <div><pre>private Gen&lt;Pair&lt;String, Integer&gt;&gt; inputWithCorruptablePosition()
+                  <div><pre>
+private Gen&lt;Pair&lt;String, Integer&gt;&gt; inputWithCorruptablePosition()
 {
 	return inputs().flatMap(s -&gt; integers().between(2, s.length() + 2)
-					.map(i -&gt; Pair.create(s, i)));
+		.map(i -&gt; Pair.create(s, i)));
 }
                   </pre></div>
                   

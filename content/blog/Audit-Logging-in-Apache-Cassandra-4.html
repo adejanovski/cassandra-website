@@ -11,7 +11,7 @@
 		<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400&family=Red+Hat+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap" rel="stylesheet">
 	
 			
-	<script async defer data-domain="cassandra.staged.apache.org" src="https://plausible.cassandra.apache.org/js/plausible.js"></script></head>
+	</head>
 	<body class="blog-index">
 		<div class="container mx-auto">
 			<div id="mobile-nav-overlay" class="hide">
@@ -283,19 +283,16 @@
                   </ul>
                   
                   <h3 id="example-of-audit-log-messages">Example of Audit log messages</h3>
-                  <div class="highlighter-rouge"><code>
+                  <div class="highlighter-rouge"><code><pre>
 Type: AuditLog
-LogMessage: user:anonymous|host:127.0.0.1:7000|source:/127.0.0.1|port:53418|timestamp:1539978679457|
-type:SELECT|category:QUERY|ks:k1|scope:t1|operation:SELECT * from k1.t1 ;
+LogMessage: user:anonymous|host:127.0.0.1:7000|source:/127.0.0.1|port:53418|timestamp:1539978679457|type:SELECT|category:QUERY|ks:k1|scope:t1|operation:SELECT * from k1.t1 ;
 
 Type: AuditLog
-LogMessage: user:anonymous|host:127.0.0.1:7000|source:/127.0.0.1|port:53418|timestamp:1539978692456|type:SELECT|
-category:QUERY|ks:system|scope:peers|operation:SELECT * from system.peers limit 1;
+LogMessage: user:anonymous|host:127.0.0.1:7000|source:/127.0.0.1|port:53418|timestamp:1539978692456|type:SELECT|category:QUERY|ks:system|scope:peers|operation:SELECT * from system.peers limit 1;
 
 Type: AuditLog
-LogMessage: user:anonymous|host:127.0.0.1:7000|source:/127.0.0.1|port:53418|timestamp:1539980764310|type:SELECT|
-category:QUERY|ks:system_virtual_schema|scope:columns|operation:SELECT * from system_virtual_schema.columns ;
-				  </code></div>
+LogMessage: user:anonymous|host:127.0.0.1:7000|source:/127.0.0.1|port:53418|timestamp:1539980764310|type:SELECT|category:QUERY|ks:system_virtual_schema|scope:columns|operation:SELECT * from system_virtual_schema.columns ;
+</pre></code></div>
                   
                   <hr>
                   
@@ -322,8 +319,8 @@ category:QUERY|ks:system_virtual_schema|scope:columns|operation:SELECT * from sy
                   <h4 id="nodetool-command-to-enable-auditlog">NodeTool command to enable AuditLog</h4>
                   <p><code class="highlighter-rouge">enableauditlog</code>: Enables AuditLog with yaml defaults. yaml configurations can be overridden using options via nodetool command.</p>
                   
-                  <div class="highlighter-rouge"><pre class="highlight"><code>nodetool enableauditlog
-                  </code></pre>
+                  <div class="highlighter-rouge">
+                  	<pre><code>nodetool enableauditlog</code></pre>
                   </div>
                   
                   <p><strong>Options:</strong></p>
